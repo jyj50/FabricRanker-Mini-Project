@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>옷 재질 예측 시스템</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="/bootstrap-5.3.6-dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #34495e;
+            --accent-color: #3498db;
+            --text-color: #2c3e50;
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+
+        .main-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 0;
+        }
+
+        .content-wrapper {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            padding: 3rem;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .header-section {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .header-section h1 {
+            color: var(--primary-color);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            font-size: 2.2rem;
+        }
+
+        .header-section p {
+            color: var(--secondary-color);
+            font-size: 1.1rem;
+            margin-bottom: 0;
+        }
+
+        .upload-section {
+            margin-bottom: 2rem;
+        }
+
+        .form-label {
+            color: var(--primary-color);
+            font-weight: 500;
+            margin-bottom: 0.8rem;
+        }
+
+        .form-control {
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 0.8rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+        }
+
+        .btn-upload {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+            padding: 0.8rem 2rem;
+            font-weight: 500;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .btn-upload:hover {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+            transform: translateY(-1px);
+        }
+
+        .results-section {
+            margin-top: 2.5rem;
+        }
+
+        .results-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .results-card .card-header {
+            background: var(--primary-color);
+            color: white;
+            border-radius: 12px 12px 0 0 !important;
+            padding: 1.2rem;
+            border: none;
+        }
+
+        .results-card .card-header h5 {
+            margin: 0;
+            font-weight: 600;
+            font-size: 1.3rem;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #e9ecef;
+            transition: background-color 0.2s ease;
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-item:hover {
+            background-color: rgba(52, 152, 219, 0.05);
+        }
+
+        .result-rank {
+            background: var(--accent-color);
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .result-material {
+            flex-grow: 1;
+            margin-left: 1rem;
+            font-weight: 500;
+            color: var(--primary-color);
+            font-size: 1.1rem;
+        }
+
+        .result-percentage {
+            background: var(--secondary-color);
+            color: white;
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .divider {
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent-color), transparent);
+            margin: 2rem 0;
+            border: none;
+        }
+
+        @media (max-width: 768px) {
+            .content-wrapper {
+                margin: 1rem;
+                padding: 2rem;
+            }
+            
+            .header-section h1 {
+                font-size: 1.8rem;
+            }
+            
+            .result-item {
+                padding: 0.8rem 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="content-wrapper">
+            <!-- Header Section -->
+            <div class="header-section">
+                <h1>옷 재질 예측 시스템</h1>
+                <p>딥러닝 기술로 옷의 재질을 정확하게 분석합니다</p>
+            </div>
+
+            <hr class="divider">
+
+            <!-- Upload Form Section -->
+            <div class="upload-section">
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-4">
+                        <label class="form-label">옷 이미지를 업로드해주세요</label>
+                        {{ form.as_p }}
+                    </div>
+                    <button type="submit" class="btn btn-upload">
+                        <i class="bi bi-cloud-upload me-2"></i>
+                        재질 분석하기
+                    </button>
+                </form>
+            </div>
+
+            <!-- Results Section -->
+            {% if result %}
+            <div class="results-section">
+                <div class="card results-card">
+                    <div class="card-header">
+                        <h5>
+                            <i class="bi bi-graph-up me-2"></i>
+                            예측 결과
+                        </h5>
+                    </div>
+                    <div class="card-body p-0">
+                        {% for material, confidence in result %}
+                        <div class="result-item">
+                            <div class="result-rank">{{ forloop.counter }}</div>
+                            <div class="result-material">{{ material }}</div>
+                            <div class="result-percentage">{{ confidence|floatformat:1 }}%</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="/bootstrap-5.3.6-dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JS for enhanced UX -->
+    <script>
+        // File input enhancement
+        document.addEventListener('DOMContentLoaded', function() {
+            const fileInput = document.querySelector('input[type="file"]');
+            if (fileInput) {
+                fileInput.addEventListener('change', function(e) {
+                    const fileName = e.target.files[0]?.name;
+                    if (fileName) {
+                        // You can add file name display logic here if needed
+                        console.log('Selected file:', fileName);
+                    }
+                });
+            }
+
+            // Form submission loading state
+            const form = document.querySelector('form');
+            const submitBtn = document.querySelector('.btn-upload');
+            
+            if (form && submitBtn) {
+                form.addEventListener('submit', function() {
+                    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span>분석 중...';
+                    submitBtn.disabled = true;
+                });
+            }
+
+            // Animate results on load
+            const resultItems = document.querySelectorAll('.result-item');
+            resultItems.forEach((item, index) => {
+                item.style.opacity = '0';
+                item.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    item.style.transition = 'all 0.5s ease';
+                    item.style.opacity = '1';
+                    item.style.transform = 'translateY(0)';
+                }, index * 150);
+            });
+        });
+    </script>
+</body>
+</html>
